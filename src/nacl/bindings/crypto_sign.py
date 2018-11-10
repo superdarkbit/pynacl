@@ -74,6 +74,50 @@ def crypto_sign_seed_keypair(seed):
     )
 
 
+def crypto_sign_ed25519_blake2b_keypair():
+    """
+    Returns a randomly generated public key and secret key.
+
+    :rtype: (bytes(public_key), bytes(secret_key))
+    """
+    pk = ffi.new("unsigned char[]", crypto_sign_PUBLICKEYBYTES)
+    sk = ffi.new("unsigned char[]", crypto_sign_SECRETKEYBYTES)
+
+    rc = lib.crypto_sign_ed25519_blake2b_keypair(pk, sk)
+    ensure(rc == 0,
+           'Unexpected library error',
+           raising=exc.RuntimeError)
+
+    return (
+        ffi.buffer(pk, crypto_sign_PUBLICKEYBYTES)[:],
+        ffi.buffer(sk, crypto_sign_SECRETKEYBYTES)[:],
+    )
+
+
+def crypto_sign_ed25519_blake2b_seed_keypair(seed):
+    """
+    Computes and returns the public key and secret key using the seed ``seed``.
+
+    :param seed: bytes
+    :rtype: (bytes(public_key), bytes(secret_key))
+    """
+    if len(seed) != crypto_sign_SEEDBYTES:
+        raise exc.ValueError("Invalid seed")
+
+    pk = ffi.new("unsigned char[]", crypto_sign_PUBLICKEYBYTES)
+    sk = ffi.new("unsigned char[]", crypto_sign_SECRETKEYBYTES)
+
+    rc = lib.crypto_sign_ed25519_blake2b_seed_keypair(pk, sk, seed)
+    ensure(rc == 0,
+           'Unexpected library error',
+           raising=exc.RuntimeError)
+
+    return (
+        ffi.buffer(pk, crypto_sign_PUBLICKEYBYTES)[:],
+        ffi.buffer(sk, crypto_sign_SECRETKEYBYTES)[:],
+    )
+
+
 def crypto_sign(message, sk):
     """
     Signs the message ``message`` using the secret key ``sk`` and returns the
@@ -107,6 +151,45 @@ def crypto_sign_open(signed, pk):
     message_len = ffi.new("unsigned long long *")
 
     if lib.crypto_sign_open(
+            message, message_len, signed, len(signed), pk) != 0:
+        raise exc.BadSignatureError("Signature was forged or corrupt")
+
+    return ffi.buffer(message, message_len[0])[:]
+
+
+def crypto_sign_ed25519_blake2b(message, sk):
+    """
+    Signs the message ``message`` using the secret key ``sk`` and returns the
+    signed message.
+
+    :param message: bytes
+    :param sk: bytes
+    :rtype: bytes
+    """
+    signed = ffi.new("unsigned char[]", len(message) + crypto_sign_BYTES)
+    signed_len = ffi.new("unsigned long long *")
+
+    rc = lib.crypto_sign_ed25519_blake2b(signed, signed_len, message, len(message), sk)
+    ensure(rc == 0,
+           'Unexpected library error',
+           raising=exc.RuntimeError)
+
+    return ffi.buffer(signed, signed_len[0])[:]
+
+
+def crypto_sign_ed25519_blake2b_open(signed, pk):
+    """
+    Verifies the signature of the signed message ``signed`` using the public
+    key ``pk`` and returns the unsigned message.
+
+    :param signed: bytes
+    :param pk: bytes
+    :rtype: bytes
+    """
+    message = ffi.new("unsigned char[]", len(signed))
+    message_len = ffi.new("unsigned long long *")
+
+    if lib.crypto_sign_ed25519_blake2b_open(
             message, message_len, signed, len(signed), pk) != 0:
         raise exc.BadSignatureError("Signature was forged or corrupt")
 
