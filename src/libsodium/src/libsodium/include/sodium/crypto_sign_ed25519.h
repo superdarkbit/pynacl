@@ -72,6 +72,24 @@ int crypto_sign_ed25519_seed_keypair(unsigned char *pk, unsigned char *sk,
                                      const unsigned char *seed);
 
 SODIUM_EXPORT
+int crypto_sign_ed25519_blake2b(unsigned char *sm, unsigned long long *smlen_p,
+                        const unsigned char *m, unsigned long long mlen,
+                        const unsigned char *sk);
+
+SODIUM_EXPORT
+int crypto_sign_ed25519_blake2b_open(unsigned char *m, unsigned long long *mlen_p,
+                             const unsigned char *sm, unsigned long long smlen,
+                             const unsigned char *pk)
+            __attribute__ ((warn_unused_result));
+
+SODIUM_EXPORT
+int crypto_sign_ed25519_blake2b_keypair(unsigned char *pk, unsigned char *sk);
+
+SODIUM_EXPORT
+int crypto_sign_ed25519_blake2b_seed_keypair(unsigned char *pk, unsigned char *sk,
+                                     const unsigned char *seed);
+
+SODIUM_EXPORT
 int crypto_sign_ed25519_pk_to_curve25519(unsigned char *curve25519_pk,
                                          const unsigned char *ed25519_pk)
             __attribute__ ((warn_unused_result));

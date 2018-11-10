@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "crypto_hash_sha512.h"
+#include "crypto_generichash_blake2b.h"
 #include "crypto_scalarmult_curve25519.h"
 #include "crypto_sign_ed25519.h"
 #include "sign_ed25519_ref10.h"
